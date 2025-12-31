@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Labor Loss Calculator - IDDION Solutions</title>
+    <meta name="description" content="Calculate the hidden costs of managing contract workforce without a governance system. Find out how much your organization is losing annually.">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Custom range slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div id="calculator-root" class="min-h-screen p-4 md:p-8"></div>
+
+    <script>
+        // React-like state management
+        class CalculatorApp {
+            constructor() {
+                this.state = {
+                    totalContractors: 1000,
+                    avgMonthlyCostPerContractor: 15000,
+                    ghostWorkerPercentage: 5,
+                    buddyPunchingPercentage: 3,
+                    overtimeInflationPercentage: 8,
+                    invoiceOverbillingPercentage: 4,
+                    headcountMismatchPercentage: 2,
+                    pfEsiMismatchPercentage: 6,
+                    wrongClassificationPercentage: 3,
+                    backgroundCheckFailures: 2,
+                    productivityLossDays: 5,
+                };
+                
+                this.root = document.getElementById('calculator-root');
+                this.render();
+            }
+
+            setState(updates) {
+                this.state = { ...this.state, ...updates };
+                this.render();
+            }
+
+            calculate() {
+                const s = this.state;
+                const monthlySpend = s.totalContractors * s.avgMonthlyCostPerContractor;
+                const annualSpend = monthlySpend * 12;
+
+                const ghostWorkersCount = (s.totalContractors * s.ghostWorkerPercentage) / 100;
+                const ghostWorkersAnnualLoss = ghostWorkersCount * s.avgMonthlyCostPerContractor * 12;
+
+                const buddyPunchingCount = (s.totalContractors * s.buddyPunchingPercentage) / 100;
+                const buddyPunchingAnnualLoss = buddyPunchingCount * s.avgMonthlyCostPerContractor * 12 * 0.2;
+
+                const overtimeAnnualLoss = (annualSpend * s.overtimeInflationPercentage) / 100;
+                const overbillingAnnualLoss = (annualSpend * s.invoiceOverbillingPercentage) / 100;
+                const headcountMismatchLoss = (annualSpend * s.headcountMismatchPercentage) / 100;
+                const pfEsiPenaltyLoss = (annualSpend * s.pfEsiMismatchPercentage) / 100 * 0.5;
+                const classificationRisk = (annualSpend * s.wrongClassificationPercentage) / 100;
+                
+                const bgCheckFailuresCount = (s.totalContractors * s.backgroundCheckFailures) / 100;
+                const bgCheckLoss = bgCheckFailuresCount * 50000;
+                
+                const productivityLoss = s.totalContractors * (s.productivityLossDays * 500);
+                const adminOverhead = s.totalContractors * 1200;
+
+                const totalAnnualLoss = 
+                    ghostWorkersAnnualLoss + 
+                    buddyPunchingAnnualLoss + 
+                    overtimeAnnualLoss + 
+                    overbillingAnnualLoss + 
+                    headcountMismatchLoss + 
+                    pfEsiPenaltyLoss + 
+                    classificationRisk + 
+                    bgCheckLoss + 
+                    productivityLoss + 
+                    adminOverhead;
+
+                const lossPercentage = (totalAnnualLoss / annualSpend) * 100;
+                const platformCost = s.totalContractors * 150 * 12;
+                const netSavings = totalAnnualLoss - platformCost;
+                const roiMultiple = totalAnnualLoss / platformCost;
+
+                return {
+                    monthlySpend, annualSpend, ghostWorkersCount, ghostWorkersAnnualLoss,
+                    buddyPunchingCount, buddyPunchingAnnualLoss, overtimeAnnualLoss,
+                    overbillingAnnualLoss, headcountMismatchLoss, pfEsiPenaltyLoss,
+                    classificationRisk, bgCheckFailuresCount, bgCheckLoss,
+                    productivityLoss, adminOverhead, totalAnnualLoss, lossPercentage,
+                    platformCost, netSavings, roiMultiple
+                };
+            }
+
+            formatCurrency(amount) {
+                if (amount >= 10000000) {
+                    return `₹${(amount / 10000000).toFixed(2)} Cr`;
+                } else if (amount >= 100000) {
+                    return `₹${(amount / 100000).toFixed(2)} L`;
+                } else {
+                    return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+                }
+            }
+
+            render() {
+                const calc = this.calculate();
+                
+                this.root.innerHTML = `
+                    <div class="max-w-7xl mx-auto">
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <div class="flex items-center justify-center gap-3 mb-4">
+                                <i data-lucide="calculator" class="w-12 h-12 text-indigo-600"></i>
+                                <h1 class="text-4xl font-bold text-gray-800">Contract Labor Loss Calculator</h1>
+                            </div>
+                            <p class="text-lg text-gray-600">Calculate the hidden costs of managing contract workforce without a governance system</p>
+                        </div>
+
+                        <div class="grid lg:grid-cols-2 gap-8">
+                            <!-- Input Section -->
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                    <i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                                    Your Workforce Details
+                                </h2>
+
+                                <div class="space-y-5">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Total Contract Workers
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="totalContractors"
+                                            value="${this.state.totalContractors}"
+                                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-lg"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Average Monthly Cost per Contractor (₹)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="avgMonthlyCostPerContractor"
+                                            value="${this.state.avgMonthlyCostPerContractor}"
+                                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-lg"
+                                        />
+                                    </div>
+
+                                    <div class="pt-4 border-t-2 border-gray-200">
+                                        <h3 class="font-semibold text-gray-800 mb-4">Loss Factors (%)</h3>
+                                        
+                                        <div class="space-y-4">
+                                            ${this.renderSlider('ghostWorkerPercentage', 'Ghost Workers', 0, 15)}
+                                            ${this.renderSlider('buddyPunchingPercentage', 'Buddy Punching/Time Theft', 0, 10)}
+                                            ${this.renderSlider('overtimeInflationPercentage', 'Overtime Inflation/Manipulation', 0, 20)}
+                                            ${this.renderSlider('invoiceOverbillingPercentage', 'Invoice Overbilling', 0, 10)}
+                                            ${this.renderSlider('headcountMismatchPercentage', 'Headcount Mismatch', 0, 8)}
+                                            ${this.renderSlider('pfEsiMismatchPercentage', 'PF/ESI Mismatch/Non-compliance', 0, 15)}
+                                            ${this.renderSlider('wrongClassificationPercentage', 'Wrong Classification Risk', 0, 10)}
+                                            ${this.renderSlider('backgroundCheckFailures', 'Background Check Failures', 0, 10)}
+                                            ${this.renderSlider('productivityLossDays', 'Productivity Loss (Days/Year per Worker)', 0, 20, 1)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Results Section -->
+                            <div class="space-y-6">
+                                <!-- Total Loss Card -->
+                                <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-2xl p-8 text-white">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                                        <h2 class="text-2xl font-bold">Total Annual Loss</h2>
+                                    </div>
+                                    <div class="text-6xl font-bold mb-2">
+                                        ${this.formatCurrency(calc.totalAnnualLoss)}
+                                    </div>
+                                    <div class="text-xl opacity-90">
+                                        ${calc.lossPercentage.toFixed(2)}% of your annual contractor spend
+                                    </div>
+                                    <div class="mt-4 pt-4 border-t border-red-400">
+                                        <div class="text-sm opacity-80">Annual Contractor Spend</div>
+                                        <div class="text-2xl font-semibold">${this.formatCurrency(calc.annualSpend)}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Breakdown Card -->
+                                <div class="bg-white rounded-xl shadow-lg p-6">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i data-lucide="trending-down" class="w-6 h-6 text-red-600"></i>
+                                        Loss Breakdown
+                                    </h3>
+                                    
+                                    <div class="space-y-3">
+                                        ${this.renderLossItem('Ghost Workers', calc.ghostWorkersAnnualLoss, `${Math.round(calc.ghostWorkersCount)} ghost workers detected`)}
+                                        ${this.renderLossItem('Buddy Punching/Time Theft', calc.buddyPunchingAnnualLoss, `${Math.round(calc.buddyPunchingCount)} workers affected`)}
+                                        ${this.renderLossItem('Overtime Inflation', calc.overtimeAnnualLoss, 'Inflated or manipulated OT claims')}
+                                        ${this.renderLossItem('Invoice Overbilling', calc.overbillingAnnualLoss, 'Vendor billing discrepancies')}
+                                        ${this.renderLossItem('Headcount Mismatch', calc.headcountMismatchLoss, 'Paying for workers not present')}
+                                        ${this.renderLossItem('PF/ESI Penalties', calc.pfEsiPenaltyLoss, 'Non-compliance penalties and back-payments')}
+                                        ${this.renderLossItem('Classification Risk', calc.classificationRisk, 'Potential back-taxes for misclassification')}
+                                        ${this.renderLossItem('Background Check Failures', calc.bgCheckLoss, `${Math.round(calc.bgCheckFailuresCount)} incidents of fraud/theft`)}
+                                        ${this.renderLossItem('Productivity Loss', calc.productivityLoss, 'Due to workforce management issues')}
+                                        ${this.renderLossItem('Administrative Overhead', calc.adminOverhead, 'Manual processing and reconciliation costs')}
+                                    </div>
+                                </div>
+
+                                <!-- ROI Insight -->
+                                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                                    <h3 class="text-xl font-bold mb-3">💡 ROI Insight with IDDION Platform</h3>
+                                    <p class="text-lg mb-2">
+                                        Platform Cost: ${this.formatCurrency(calc.platformCost)}/year
+                                    </p>
+                                    <p class="text-lg">
+                                        Potential Savings: <span class="text-3xl font-bold">${this.formatCurrency(calc.netSavings)}</span>
+                                    </p>
+                                    <p class="text-sm mt-3 opacity-90">
+                                        That's a <span class="font-bold">${calc.roiMultiple.toFixed(1)}x ROI</span> in the first year!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="mt-8 text-center text-gray-600 text-sm">
+                            <p>* Calculations based on industry benchmarks and conservative estimates</p>
+                            <p class="mt-2">Actual losses may vary based on your specific operational context</p>
+                        </div>
+                    </div>
+                `;
+
+                // Re-initialize Lucide icons
+                lucide.createIcons();
+
+                // Add event listeners
+                this.attachEventListeners();
+            }
+
+            renderSlider(id, label, min, max, step = 0.5) {
+                return `
+                    <div>
+                        <label class="block text-sm text-gray-700 mb-1">
+                            ${label}: ${this.state[id]}${id === 'productivityLossDays' ? '' : '%'}
+                        </label>
+                        <input
+                            type="range"
+                            id="${id}"
+                            min="${min}"
+                            max="${max}"
+                            step="${step}"
+                            value="${this.state[id]}"
+                            class="w-full"
+                        />
+                    </div>
+                `;
+            }
+
+            renderLossItem(label, amount, detail) {
+                return `
+                    <div class="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">${label}</div>
+                            <div class="text-xs text-gray-600 mt-1">${detail}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-red-600">${this.formatCurrency(amount)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            attachEventListeners() {
+                const inputs = [
+                    'totalContractors', 'avgMonthlyCostPerContractor',
+                    'ghostWorkerPercentage', 'buddyPunchingPercentage',
+                    'overtimeInflationPercentage', 'invoiceOverbillingPercentage',
+                    'headcountMismatchPercentage', 'pfEsiMismatchPercentage',
+                    'wrongClassificationPercentage', 'backgroundCheckFailures',
+                    'productivityLossDays'
+                ];
+
+                inputs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        const handler = (e) => {
+                            this.setState({ [id]: parseFloat(e.target.value) || 0 });
+                        };
+
+                        // Use 'input' for range sliders for immediate feedback,
+                        // but use 'change' for number fields so users can type
+                        // multi-digit values without the render interrupting them.
+                        if (el.type === 'range') {
+                            el.addEventListener('input', handler);
+                        } else {
+                            el.addEventListener('change', handler);
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize the app
+        new CalculatorApp();
+    </script>
+</body>
+</html>
